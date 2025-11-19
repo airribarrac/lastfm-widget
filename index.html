@@ -105,10 +105,6 @@
   const params = new URLSearchParams(window.location.search);
   const user = params.get("user") || "crying-daemon";
 
-
-  const params = new URLSearchParams(window.location.search);
-  const user = params.get("user") || "crying-daemon";
-
   const profileLink = document.getElementById("profile-link");
   profileLink.href = `https://www.last.fm/user/${encodeURIComponent(user)}`;
 

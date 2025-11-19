@@ -82,6 +82,7 @@
 <body>
 
 <a
+  id="profile-link"
   href="https://www.last.fm/user/crying-daemon"
   target="_top"
   class="widget-link"
@@ -103,6 +104,13 @@
 <script>
   const params = new URLSearchParams(window.location.search);
   const user = params.get("user") || "crying-daemon";
+
+
+  const params = new URLSearchParams(window.location.search);
+  const user = params.get("user") || "crying-daemon";
+
+  const profileLink = document.getElementById("profile-link");
+  profileLink.href = `https://www.last.fm/user/${encodeURIComponent(user)}`;
 
   const API_BASE = "https://lastfm-widget-api-proxy-hj9n.vercel.app/api/lastfm";
 

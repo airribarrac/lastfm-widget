@@ -1,0 +1,163 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<title>Last.fm widget · crying-daemon</title>
+<meta name="viewport" content="width=device-width, initial-scale=1">
+
+<style>
+  @import url('https://fonts.googleapis.com/css2?family=Syne+Mono&display=swap');
+
+  body {
+    margin: 0;
+    padding: 0;
+    background: transparent;
+    font-family: "Syne Mono", "Comic Sans MS", "Comic Sans", sans-serif;
+  }
+
+  .retro-box {
+    width: 140px;
+    background-color: #e3e7fd;
+    color: #752a49;
+    border: 3px solid #8b6982;
+    padding: 4px;
+    box-sizing: border-box;
+    font-size: 10px;
+  }
+
+  .retro-title {
+    font-size: 10px;
+    font-weight: bold;
+    text-align: center;
+    padding: 2px 3px;
+    margin-bottom: 4px;
+    background: linear-gradient(#f9e5ff, #fb95db);
+    border: 1px solid #8b6982;
+    letter-spacing: 0.5px;
+    text-transform: uppercase;
+  }
+
+  .retro-cover img {
+    width: 100%;
+    height: auto;
+    border: 1px solid #8b6982;
+    margin-bottom: 3px;
+    display: block;
+  }
+
+  .retro-status {
+    font-size: 9px;
+    text-transform: uppercase;
+    margin-bottom: 2px;
+    text-align: center;
+  }
+
+  .retro-marquee {
+    background: #fbceed;
+    border: 1px solid #8b6982;
+    padding: 2px;
+    font-size: 10px;
+    white-space: nowrap;
+    box-sizing: border-box;
+    margin-bottom: 4px;
+  }
+
+  .retro-footer {
+    font-size: 8px;
+    text-align: center;
+    opacity: 0.6;
+  }
+
+  .retro-marquee marquee {
+    width: 100%;
+  }
+
+  a.widget-link {
+    text-decoration: none;
+    color: inherit;
+    display: block;
+  }
+</style>
+</head>
+<body>
+
+<a
+  href="https://www.last.fm/user/crying-daemon"
+  target="_top"
+  class="widget-link"
+>
+  <div class="retro-box">
+
+    <div class="retro-cover">
+      <img id="lastfm-cover" src="" alt="cover">
+    </div>
+
+    <div id="lastfm-status" class="retro-status">loading…</div>
+
+    <div class="retro-marquee">
+      <marquee id="lastfm-trackline" scrollamount="2" behavior="scroll">…</marquee>
+    </div>
+
+  </div>
+</a>
+
+<script>
+  const params = new URLSearchParams(window.location.search);
+  const user = params.get("user") || "crying-daemon";
+
+  const API_BASE = "https://lastfm-widget-api-proxy-hj9n.vercel.app/api/lastfm";
+
+  async function loadWidget() {
+    const statusEl = document.getElementById("lastfm-status");
+    const tracklineEl = document.getElementById("lastfm-trackline");
+    const coverEl = document.getElementById("lastfm-cover");
+
+    try {
+      const url = `${API_BASE}?user=${encodeURIComponent(user)}`;
+      const res = await fetch(url);
+      if (!res.ok) throw new Error("HTTP " + res.status);
+
+      const data = await res.json();
+      const tracks = data?.recenttracks?.track;
+
+      if (!tracks || tracks.length === 0) {
+        statusEl.textContent = "no recent tracks";
+        tracklineEl.textContent = "";
+        coverEl.src =
+          "https://lastfm.freetls.fastly.net/i/u/300x300/2a96cbd8b46e442fc41c2b86b821562f.png";
+        return;
+      }
+
+      const t = tracks[0];
+      const isNow = t["@attr"] && t["@attr"].nowplaying === "true";
+
+      statusEl.textContent = isNow ? "now playing" : "last track";
+
+      const name = t.name || "unknown";
+      const artist = (t.artist && t.artist["#text"]) || "unknown";
+      tracklineEl.textContent = `${name} – ${artist}`;
+
+      let img = "";
+      if (Array.isArray(t.image) && t.image.length > 0) {
+        img = t.image[t.image.length - 1]["#text"] || "";
+      }
+      coverEl.src =
+        img ||
+        "https://lastfm.freetls.fastly.net/i/u/300x300/2a96cbd8b46e442fc41c2b86b821562f.png";
+    } catch (e) {
+      console.error(e);
+      statusEl.textContent = "error loading";
+      tracklineEl.textContent = "";
+      coverEl.src =
+        "https://lastfm.freetls.fastly.net/i/u/300x300/2a96cbd8b46e442fc41c2b86b821562f.png";
+    }
+  }
+
+  loadWidget();
+  // If you want auto-refresh:
+  // setInterval(loadWidget, 60000);
+</script>
+
+</body>
+</html>
+
